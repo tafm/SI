@@ -5,18 +5,10 @@ import robocode.*;
 import robocode.ScannedRobotEvent;
 
 
-// Se debe incluir SIEMPRE la definición de esta consulta, la usa el robot para recuperar las acciones
 query "consulta_acciones"
   accion: Accion()
 end
 
-
-// 
-// REGLAS
-//
-
-
-// Hecho para almacenar informacion de la victima seleccionada (si existe)
 declare Victima
    nombre: String
    x: double
@@ -25,8 +17,6 @@ declare Victima
 end
 
 
-// Regla de conveniencia: elimina acciones del mismo tipo con menor prioridad
-// Si no se hiciera el robot ejecutaría la última acción insertada sin atender a su pioridad
 rule "depurar acciones del mismo tipo"
 when
 	$accion1: Accion($tipo: tipo, $prioridad1: prioridad)
@@ -37,23 +27,8 @@ then
     System.out.println("regla 1");
 end
 
-// Cuando no hay robots detectados forzar un giro completo del radar
-rule "sin robots a la vista -> giro completo del radar"
-when
-	not (exists ScannedRobotEvent())
-then
-	insert (new Accion(Accion.GIRAR_RADAR_DER, 360, 1));
-	System.out.println("regla 2");
-end
 
-// // No necesaria ¿?
-//rule "sin victima fijada -> giro completo del radar"
-//when
-//      not (exists Victima())
-//then
-//      insert (new Accion(Accion.GIRAR_RADAR_DER, 360, 1));
-//      System.out.println("regla 2-bis");
-//end
+
 
 // Cuando esta parado y no hay victima girar radar 360 y moverse al azar
 rule "parado sin victima -> moverse al azar (girar+avanzar)"
@@ -92,7 +67,6 @@ rule "victima detectada -> actualizar datos e ir hacia ella"
 end
 
 
-
 // Victima detectada por radar, si está en el punto de mira (anguloRelativoCañón == anguloRelativoVictima) con un margen de 2 grados, disparar con el maximo disponible
 //  (se activará a lavez que la regla anterior)
 rule "victima en punto de mira -> disparar"
@@ -101,7 +75,7 @@ rule "victima en punto de mira -> disparar"
       Victima ($nombreVictima: nombre)
       // Victima detectada y cañon apunta en su angulo (con un margen de 2 grados)
       ScannedRobotEvent(name == $nombreVictima, $anguloRelativoVictima: bearing)                       
-      eval (Math.abs($anguloRelativoVictima - Auxiliar.anguloRelativo($status.getHeading(), $status.getGunHeading())) <= 2)   
+      eval (Math.abs($anguloRelativoVictima - Auxiliar.anguloRelativo($status.getHeading(), $status.getGunHeading())) <= 6)   
    then
       insert(new Accion(Accion.DISPARAR, Math.min(Rules.MAX_BULLET_POWER, 0.10*$status.getEnergy()), 1));
       System.out.println("Victima "+$nombreVictima+" a tiro => disparar");
@@ -114,6 +88,8 @@ rule "sin victima -> tomar la primera que aparezca"
 when
 	not (exists Victima())
 	$victimaEscaneada: ScannedRobotEvent()
+    not (eval($victimaEscaneada.getName().contains("Dilmae")))
+    not (eval($victimaEscaneada.getName().contains("FaustoSilva")))
 	$status: EstadoRobot()
 then
     Victima victima = new Victima();
@@ -144,8 +120,16 @@ then
 end
 
 
-// Al chocar con un muro, salir "rebotado" en el angulo opuesto
-//   (tiene prioridad 5 para evitar que otras acciones "normales" nos hagan quedar estancados)  
+rule "choque"
+when
+   HitRobotEvent()
+then
+   insert(new Accion(Accion.RETROCEDER, 100, 5));
+end
+
+
+
+
 rule "choque con muro"
 when
    HitWallEvent($anguloRelativo: bearing)
@@ -153,27 +137,3 @@ then
    insert(new Accion(Accion.GIRAR_TANQUE_DER, (- $anguloRelativo), 5));
    insert(new Accion(Accion.AVANZAR, 100, 5));
 end
-
-
-// Al chocar con victima, retroceder
-//   (tiene prioridad 5 para evitar que otras acciones "normales" nos hagan quedar estancados)  
-rule "choque con victima"
-when
-   HitRobotEvent($nombre: name, $anguloRelativo: bearing)
-   Victima(nombre == $nombre)
-then
-   insert(new Accion(Accion.RETROCEDER, 100, 5));
-end
-
-// Al chocar con otro robot que no sea la víctima (o si esta no existe), salir "rebotado" en el angulo opuesto
-//   (tiene prioridad 5 para evitar que otras acciones "normales" nos hagan quedar estancados)  
-rule "choque con otro robot"
-when
-   HitRobotEvent($nombre: name, $anguloRelativo: bearing)
-   (or (not (exists Victima()))
-       (Victima(nombre != $nombre)))
-then
-   insert(new Accion(Accion.GIRAR_TANQUE_DER, (- $anguloRelativo*1.50), 5));
-   insert(new Accion(Accion.AVANZAR, 100, 5));
-end
-
