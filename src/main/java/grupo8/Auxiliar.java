@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package drools_robocode;
+package grupo8;
 
 /**
  * Funciones auxiliares para menejar angulos, distancias, puntos, etc.

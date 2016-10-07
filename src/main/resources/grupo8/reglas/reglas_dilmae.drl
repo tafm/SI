@@ -1,6 +1,6 @@
-package drools_robocode
+package grupo8
 
-import drools_robocode.*;
+import grupo8.*;
 import robocode.*;
 import robocode.ScannedRobotEvent;
 

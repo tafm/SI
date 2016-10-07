@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package drools_robocode;
+package grupo8;
 
 import java.util.Vector;
 import org.drools.KnowledgeBase;
@@ -30,9 +30,9 @@ import robocode.StatusEvent;
  *
  * @author ribadas
  */
-public class RobotDrools extends AdvancedRobot {
+public class RoboDilmae extends AdvancedRobot {
 
-    public static String FICHERO_REGLAS = "drools_robocode/reglas/reglas_robot.drl";
+    public static String FICHERO_REGLAS = "grupo8/reglas/reglas_dilmae.drl";
     public static String CONSULTA_ACCIONES = "consulta_acciones";
     
     private KnowledgeBuilder kbuilder;
@@ -41,7 +41,7 @@ public class RobotDrools extends AdvancedRobot {
     private Vector<FactHandle> referenciasHechosActuales = new Vector<FactHandle>();
 
     
-    public RobotDrools(){
+    public RoboDilmae(){
     }
     
     @Override
@@ -85,13 +85,13 @@ public class RobotDrools extends AdvancedRobot {
 
 
     private void crearBaseConocimiento() {
-        String ficheroReglas = System.getProperty("robot.reglas", RobotDrools.FICHERO_REGLAS);
+        String ficheroReglas = System.getProperty("robot.reglas", RoboDilmae.FICHERO_REGLAS);
 
         DEBUG.mensaje("crear base de conocimientos");
         kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
         
         DEBUG.mensaje("cargar reglas desde "+ficheroReglas);
-        kbuilder.add(ResourceFactory.newClassPathResource(ficheroReglas, RobotDrools.class), ResourceType.DRL);
+        kbuilder.add(ResourceFactory.newClassPathResource(ficheroReglas, RoboDilmae.class), ResourceType.DRL);
         if (kbuilder.hasErrors()) {
             System.err.println(kbuilder.getErrors().toString());
         }
@@ -130,7 +130,7 @@ public class RobotDrools extends AdvancedRobot {
         Accion accion;
         Vector<Accion> listaAcciones = new Vector<Accion>();
 
-        for (QueryResultsRow resultado : ksession.getQueryResults(RobotDrools.CONSULTA_ACCIONES)) {
+        for (QueryResultsRow resultado : ksession.getQueryResults(RoboDilmae.CONSULTA_ACCIONES)) {
             accion = (Accion) resultado.get("accion");  // Obtener el objeto accion
             accion.setRobot(this);                      // Vincularlo al robot actual
             listaAcciones.add(accion);
